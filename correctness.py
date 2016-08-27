@@ -5,6 +5,11 @@ import re
 import subprocess
 
 #Checks to make sure that the command line arguments are a source audio filename and a source timestamps filename
+#Parameters:
+#   None
+#Return Value:
+#   goodFormatting: Boolean, indicating whether the command line arguments were correctly formatted.
+#
 def checkCommandLineArguments():
     anyReg = r'^.+\..*$'    #"something.xyz"
     txtReg = r'^.+\.txt$'   #"something.txt"
@@ -35,26 +40,36 @@ def checkCommandLineArguments():
 
     return goodFormatting
 
-#subprocess.call with extra overhead statements
+#Wrapper for subprocess.call, with extra overhead statements
+#Parameters:
+#   _command: A list of strings, to be executed by subprocess.call
+#Return Value:
+#   success: Boolean, indicating whether or not _command was executed properly
+#
 def safeCommand(_command):
-    safe = True
+    success = True
     try:
         print "You're getting me to run: "
         print "\t"+str(_command)
         code = subprocess.call(_command, shell=True)
         if code < 0:
             print "Child was terminated by signal "+str(code)
-            safe = False
+            success = False
         else:
             print "Child returned "+str(code)
 
     except OSError as e:
         print str(e)
-        safe = False
+        success = False
 
-    return safe
+    return success
 
 #Gets the length of _fileName, in seconds.
+#Parameters:
+#   _fileName: A string, naming an existing audio file.
+#Return Value:
+#   length: An integer, representing the length of _fileName in seconds
+#
 def getAudioLength(_fileName):
     lengthRe = r'\d+'
 
@@ -64,5 +79,6 @@ def getAudioLength(_fileName):
     lengthOutput = popen.stdout.read()
 
     match = re.search(lengthRe, lengthOutput)
+    length = match.group(0)
 
-    return match.group(0)
+    return length

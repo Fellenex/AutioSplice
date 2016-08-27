@@ -8,6 +8,10 @@ from correctness import *
 
 
 class Splice():
+    #Parameters:
+    #   _ts_one, _ts_two: A Timestamp object
+    #   _sourceFilename: A string, representing the splice's source audio file
+    #   _destinationFilename: A string, representing the location at which to save this splice
     def __init__(self, _ts_one, _ts_two, _sourceFilename, _destinationFilename):
         self.start = _ts_one.toString()
         self.end = _ts_two.toString()
@@ -17,6 +21,7 @@ class Splice():
         #These should be strings of the form <name>.{mp3,wav,...}
         self.sourceFilename = _sourceFilename
         self.destinationFilename = _destinationFilename
+
 
     #Creates a string which can be used as a command to create this splice as a file.
     #Full format should look like:
@@ -36,6 +41,12 @@ class Splice():
 
 
 #Take a file of timestamps and create the objects needed to create a spliced file
+#Parameters:
+#   _timestampFilename: A string, representing the location of the timestamp file
+#   _audioFilename: A string, representing the location of the source audio file
+#Return Value:
+#   splices: A list of Splice objects, one for each pair of timestamps in the timestamp file.
+#
 def createSplicesFromTimestamps(_timestampFilename, _audioFilename):
     with open(_timestampFilename, 'r') as f:
         lines = f.readlines()
@@ -47,8 +58,11 @@ def createSplicesFromTimestamps(_timestampFilename, _audioFilename):
     for i in range(len(lines)):
         ts_one,ts_two = parseTimestamp(lines[i])
 
-        if audioLength < ts_one.totalSeconds:
-            print "Issue with timestamp file, can't start at "+str(ts_one.totalSeconds)+"seconds when the file is only "+str(audioLength)+" seconds long."
+        #If the timestamp starts after the total length of the audio, then there's no way to create this splice.
+        assert ts_one.totalSeconds < audioLength
+
+        #If the second timestamp is earlier than the first timestamp, then there's no way to create this splice.
+        assert ts_one.totalSeconds < ts_two.totalSeconds
 
         splices.append(Splice(ts_one, ts_two, _audioFilename, audioFilenameExtless+"_splices\\"+str(i+1)+".mp3"))
 
@@ -56,29 +70,23 @@ def createSplicesFromTimestamps(_timestampFilename, _audioFilename):
 
 
 def main():
-    if checkCommandLineArguments():
-        sourceAudioFilename = sys.argv[1]
-        timestampsFilename = sys.argv[2]
+    assert checkCommandLineArguments()
 
-        getAudioLength(sourceAudioFilename)
+    sourceAudioFilename = sys.argv[1]
+    timestampsFilename = sys.argv[2]
+    sourceAudioExtless,sourceAudioExt = os.path.splitext(sourceAudioFilename)
 
-        splices = createSplicesFromTimestamps(timestampsFilename, sourceAudioFilename)
+    splices = createSplicesFromTimestamps(timestampsFilename, sourceAudioFilename)
+    assert len(splices) > 0
 
-        sourceAudioExtless,sourceAudioExt = os.path.splitext(sourceAudioFilename)
+    #Create the directory where everything is saved
+    spliceDirectoryName = sourceAudioExtless+"_splices"
+    dirCommand = ["mkdir", spliceDirectoryName]
+    safeCommand(dirCommand)
 
-        if len(splices) > 0:
-            spliceDirectoryName = sourceAudioExtless+"_splices"
-            print spliceDirectoryName
-            dirCommand = ["mkdir", spliceDirectoryName]
-            safeCommand(dirCommand)
-
-        print splices
-
-        for splice in splices:
-            spliceCommand = splice.generateCommand()
-            safeCommand(spliceCommand)
-
-    else:
-        exit()
+    #Create the splice files themselves
+    for splice in splices:
+        spliceCommand = splice.generateCommand()
+        safeCommand(spliceCommand)
 
 main()

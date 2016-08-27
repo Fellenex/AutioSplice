@@ -3,6 +3,8 @@
 import re
 
 class Timestamp():
+    #Parameters:
+    #   _hours, _minutes, _seconds: An integer
     def __init__(self, _hours, _minutes, _seconds):
         self.hours = _hours
         self.minutes = _minutes
@@ -18,8 +20,14 @@ class Timestamp():
         stampString += padInteger(self.seconds)
 
         return stampString
+
         
-#Creates a string of length 2 out of an integer < 100
+#Creates a string of length 2 from an integer, to be used as part of a timestamp.
+#Parameters:
+#   _padMe: An integer, less than 100
+#Return Value:
+#   padded: A string, "XY", where X and Y are integers.
+#
 def padInteger(_padMe):
     padded = ""
     if _padMe == 0:
@@ -35,7 +43,6 @@ def padInteger(_padMe):
     return padded
 
 
-
 #Tests each timestamp format available in the parseTimestamp() function
 def testTimestamps():
     examps = ["00:24:32-00:24:38", "19:59-20:21", "002432-002438", "1959-2021"]
@@ -45,7 +52,14 @@ def testTimestamps():
         timestamps.append(ts_one)
         timestamps.append(ts_two)
 
-#Takes a string and creates two timestamps, from the start and ending points.
+
+#Takes a string of two timestamps, and creates a timestamp object for each of them.
+#Parameters:
+#   _timestampString: A string, representing a starting and ending timestamp
+#Return Value:
+#   ts_one: A Timestamp object, for the starting timestamp
+#   ts_two: A Timestamp object, for the ending timestamp
+#
 def parseTimestamp(_timestampString):
     #Note: All timestamp formats expect a character inbetween the starting and ending timestamps.
 
