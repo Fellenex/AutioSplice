@@ -4,6 +4,21 @@ import sys
 import re
 import subprocess
 
+#Checks to see if the command line arguments are asking for help on how to run the program.
+#Execution is of the form "python autiosplice.py help"
+#Parameters:
+#   None
+#Return Value:
+#   None
+#
+def checkForHelp():
+    helpNeeded = False
+
+    if len(sys.argv) == 2 and sys.argv[1]=="help":
+        print "Execute the script with something of the form: "
+        print "\t python autiosplice.py greatSong.mp3 timestamps.txt"
+        exit()
+
 #Checks to make sure that the command line arguments are a source audio filename and a source timestamps filename
 #Parameters:
 #   None
@@ -15,14 +30,8 @@ def checkCommandLineArguments():
     txtReg = r'^.+\.txt$'   #"something.txt"
     goodFormatting = True
 
-    #"python autiosplice.py help"
-    if len(sys.argv) == 2 and sys.argv[1]=="help":
-        print "Execute the script with something of the form: "
-        print "\t python autiosplice.py greatSong.mp3 timestamps.txt"
-        goodFormatting = False
-
     #hopefully "python autiosplice <audioFilename> <timestampsFilename>"
-    elif len(sys.argv) == 3:
+    if len(sys.argv) == 3:
         audioFilename = sys.argv[1]
         timestampsFilename = sys.argv[2]
         if not(re.search(anyReg, audioFilename)):

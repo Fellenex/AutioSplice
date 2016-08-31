@@ -1,6 +1,8 @@
 #Main module, written by Chris Keeler
 
-import math         #for fabs
+#Should be executed as:
+    #python autiosplice.py <source_audio/video> <timestamps_file>
+
 import os           #for path.split
 import sys          #for getting command-line arguments
 from timestamps import *
@@ -16,7 +18,7 @@ class Splice():
         self.start = _ts_one.toString()
         self.end = _ts_two.toString()
 
-        self.length = math.fabs(_ts_two.totalSeconds - _ts_one.totalSeconds)
+        self.length = _ts_two.totalSeconds - _ts_one.totalSeconds
 
         #These should be strings of the form <name>.{mp3,wav,...}
         self.sourceFilename = _sourceFilename
@@ -48,21 +50,24 @@ class Splice():
 #   splices: A list of Splice objects, one for each pair of timestamps in the timestamp file.
 #
 def createSplicesFromTimestamps(_timestampFilename, _audioFilename):
+    audioLength = getAudioLength(_audioFilename)
+    audioFilenameExtless = os.path.splitext(_audioFilename)[0]
+    splices = []
+
     with open(_timestampFilename, 'r') as f:
         lines = f.readlines()
 
-    audioLength = getAudioLength(_audioFilename)
-    audioFilenameExtless = os.path.splitext(_audioFilename)[0]
-
-    splices = []
     for i in range(len(lines)):
         ts_one,ts_two = parseTimestamp(lines[i])
 
-        #If the timestamp starts after the total length of the audio, then there's no way to create this splice.
-        assert ts_one.totalSeconds < audioLength
+        #If the second timestamp is later than the total length of the audio, then there's no way to create this splice.
+        assert ts_two.totalSeconds < audioLength
 
         #If the second timestamp is earlier than the first timestamp, then there's no way to create this splice.
         assert ts_one.totalSeconds < ts_two.totalSeconds
+
+        #Because ts_one.totalSeconds < ts_two.totalSeconds, and ts_two.totalSeconds < audioLength,
+        #   we have ts_one.totalSeconds < audioLength
 
         splices.append(Splice(ts_one, ts_two, _audioFilename, audioFilenameExtless+"_splices\\"+str(i+1)+".mp3"))
 
@@ -70,6 +75,8 @@ def createSplicesFromTimestamps(_timestampFilename, _audioFilename):
 
 
 def main():
+    checkForHelp()
+    
     assert checkCommandLineArguments()
 
     sourceAudioFilename = sys.argv[1]
