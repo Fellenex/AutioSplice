@@ -5,6 +5,7 @@ import re
 import subprocess
 
 #Checks to see if the command line arguments are asking for help on how to run the program.
+#If so, it exits the program.
 #Execution is of the form "python autiosplice.py help"
 #Parameters:
 #   None
@@ -12,12 +13,11 @@ import subprocess
 #   None
 #
 def checkForHelp():
-    helpNeeded = False
-
-    if len(sys.argv) == 2 and sys.argv[1]=="help":
-        print "Execute the script with something of the form: "
-        print "\t python autiosplice.py greatSong.mp3 timestamps.txt"
-        exit()
+    if len(sys.argv) == 2:
+        if sys.argv[1]=="help":
+            print "Execute the script with something of the form: "
+            print "\t python autiosplice.py greatSong.mp3 timestamps.txt"
+            exit()
 
 #Checks to make sure that the command line arguments are a source audio filename and a source timestamps filename
 #Parameters:
